@@ -1,7 +1,9 @@
 package com.example.jayghodasara.pushnotification
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -14,6 +16,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.security.AccessController.getContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,22 +24,55 @@ class MainActivity : AppCompatActivity() {
     lateinit var databaseReference: DatabaseReference
     lateinit var ref: DatabaseReference
     lateinit var ref2: DatabaseReference
-    lateinit var serverkey: String
+    var serverkey: String? = null
     var tokenlist: ArrayList<String> = ArrayList()
+    var userslist: ArrayList<String> = ArrayList()
+    var hashMap: HashMap<String, String> = HashMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        var service: Intent = Intent(this, MyFirebaseService::class.java)
+
+        startService(service)
 
         database = FirebaseDatabase.getInstance()
         databaseReference = database.reference
-
-        ref = databaseReference.child("User")
-        ref.child("MI").child("Token").setValue(FirebaseInstanceId.getInstance().token)
+        var device_id: String = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
+        ref = databaseReference.child("User").child(device_id)
+        ref.child("Name").setValue("MI")
+        ref.child("Token").setValue(FirebaseInstanceId.getInstance().token)
 
         databaseReference.child("Server").child("Server_key").setValue("AAAApNwK_T0:APA91bGlLPgMfbCwl61IMebhKpxAAhtunX9FPUi499QxSHU9qV3ooX2j-l8zCBQOFJtmdqILtoPIgCz2ZL4EGXVRbXD9x_ermXjsAgnnzYPo2x1Bn3qY9nOJRwGUpSAtSCgv4hAwCswRygTzubatun5nXt7Dz5VtSA")
 
         ref2 = FirebaseDatabase.getInstance().reference.child("")
+
+        var query3: Query = ref2.child("User").orderByValue()
+
+        query3.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                for (snap: DataSnapshot in p0.children) {
+                    var users = snap.child("Name").value.toString()
+                    Log.i("users", users)
+                    userslist.add(users)
+
+                }
+            }
+
+        })
+
+        button.setOnClickListener(View.OnClickListener {
+
+            var intent: Intent = Intent(this, MessageActivity::class.java)
+            intent.putExtra("users", userslist)
+            intent.putExtra("hashmap", hashMap)
+            intent.putExtra("server_key", serverkey)
+            startActivity(intent)
+        })
 
         var query: Query = ref2.child("Server").orderByValue()
 
@@ -64,6 +100,9 @@ class MainActivity : AppCompatActivity() {
 
                 for (snap: DataSnapshot in p0.children) {
                     var token: String = snap.child("Token").value.toString()
+                    var username: String = snap.child("Name").value.toString()
+
+                    hashMap[username] = token
                     Log.i("tokens", token)
                     tokenlist.add(token)
 
