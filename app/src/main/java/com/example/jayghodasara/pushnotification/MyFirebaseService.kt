@@ -79,7 +79,7 @@ class MyFirebaseService : FirebaseMessagingService() {
     }
 
     fun notificationtrigger1(notificationTitle: String, notificationBody: String) {
-        val notificationIntent = Intent(this, MainActivity::class.java)
+        val notificationIntent = Intent(this, MessageActivity::class.java)
         notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
 
