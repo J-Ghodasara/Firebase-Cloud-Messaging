@@ -7,11 +7,11 @@ import retrofit2.http.Body
 import retrofit2.http.HeaderMap
 import retrofit2.http.POST
 
-interface RetrofitCallInterface{
+interface RetrofitCallInterface {
 
     @POST("send")
     fun sendreq(
-            @HeaderMap  headers:Map<String,String>,
-            @Body fcm:FCM
-    ):Call<ResponseBody>
+            @HeaderMap headers: Map<String, String>,
+            @Body fcm: FCM
+    ): Call<ResponseBody>
 }
